@@ -251,7 +251,7 @@ get_database(){
     cmake --build . --target authentication_oci_client
     cmake --build . --target mysqlclient
     cmake --build . --target mysqlxclient
-    cmake --build . --target authentication_fido_client
+    # cmake --build . --target authentication_fido_client
     cmake --build . --target authentication_ldap_sasl_client
     cmake --build . --target authentication_kerberos_client
     cmake --build . --target authentication_webauthn_client
