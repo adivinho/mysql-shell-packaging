@@ -163,21 +163,26 @@ get_protobuf(){
     git clean -fd
     git reset --hard
     git checkout "$PROTOBUF_BRANCH"
-    if [ "$PROTOBUF_BRANCH" = "v2.6.1" ]; then
-        sed -i 's;curl http://googletest.googlecode.com/files/gtest-1.5.0.tar.bz2 | tar jx;curl -L https://github.com/google/googletest/archive/release-1.5.0.tar.gz | tar zx;' autogen.sh
-        sed -i 's;mv gtest-1.5.0 gtest;mv googletest-release-1.5.0 gtest;' autogen.sh
-    fi
+    git submodule update --init --recursive
+    #if [ "$PROTOBUF_BRANCH" = "v2.6.1" ]; then
+    #    sed -i 's;curl http://googletest.googlecode.com/files/gtest-1.5.0.tar.bz2 | tar jx;curl -L https://github.com/google/googletest/archive/release-1.5.0.tar.gz | tar zx;' autogen.sh
+    #    sed -i 's;mv gtest-1.5.0 gtest;mv googletest-release-1.5.0 gtest;' autogen.sh
+    #fi
     if [ "x$OS" = "xrpm" ]; then
         if [ $RHEL -le 7 ]; then
             source /opt/rh/devtoolset-7/enable
             source /opt/rh/rh-python38/enable
         fi
     fi
-    bash -x autogen.sh
-    bash -x configure --disable-shared
-    make
-    make install
-    mv src/.libs src/lib
+    #bash -x autogen.sh
+    #bash -x configure --disable-shared
+    #make
+    #make install
+    #mv src/.libs src/lib
+    cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_SHARED_LIBS=ON
+    cmake --build .
+    ctest --verbose
+    cmake --install .
     export PATH=$MY_PATH
     return
 }
@@ -1306,7 +1311,7 @@ OS=
 PROTOBUF_REPO="https://github.com/protocolbuffers/protobuf.git"
 SHELL_REPO="https://github.com/mysql/mysql-shell.git"
 SHELL_BRANCH="8.0.31"
-PROTOBUF_BRANCH=v3.19.4
+PROTOBUF_BRANCH=v4.24.4
 INSTALL=0
 REVISION=0
 BRANCH="release-8.0.31-23"
