@@ -163,21 +163,17 @@ get_protobuf(){
     git clean -fd
     git reset --hard
     git checkout "$PROTOBUF_BRANCH"
-    if [ "$PROTOBUF_BRANCH" = "v2.6.1" ]; then
-        sed -i 's;curl http://googletest.googlecode.com/files/gtest-1.5.0.tar.bz2 | tar jx;curl -L https://github.com/google/googletest/archive/release-1.5.0.tar.gz | tar zx;' autogen.sh
-        sed -i 's;mv gtest-1.5.0 gtest;mv googletest-release-1.5.0 gtest;' autogen.sh
-    fi
+    git submodule update --init --recursive
     if [ "x$OS" = "xrpm" ]; then
         if [ $RHEL -le 7 ]; then
             source /opt/rh/devtoolset-7/enable
             source /opt/rh/rh-python38/enable
         fi
     fi
-    bash -x autogen.sh
-    bash -x configure --disable-shared
-    make
-    make install
-    mv src/.libs src/lib
+    cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_SHARED_LIBS=ON
+    cmake --build .
+    ctest --verbose
+    cmake --install .
     export PATH=$MY_PATH
     return
 }
@@ -238,24 +234,18 @@ get_database(){
             fi
         fi
         if [ $RHEL != 6 ]; then
-            #uncomment once boost downloads are fixed
-            #cmake .. -DDOWNLOAD_BOOST=1 -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled
-            cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
+            cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
         else
-            #uncomment once boost downloads are fixed
-            #cmake .. -DDOWNLOAD_BOOST=1 -DENABLE_DOWNLOADS=1 -DWITH_SSL=/usr/local/openssl11 -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled
-            cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=/usr/local/openssl11 -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
+            cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=/usr/local/openssl11 -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
         fi
     else
-        #uncomment once boost downloads are fixed
-        #cmake .. -DDOWNLOAD_BOOST=1 -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled
-        cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=bundled -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
+        cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
     fi
 
     cmake --build . --target authentication_oci_client
     cmake --build . --target mysqlclient
     cmake --build . --target mysqlxclient
-    cmake --build . --target authentication_fido_client
+    #cmake --build . --target authentication_fido_client
     cmake --build . --target authentication_ldap_sasl_client
     cmake --build . --target authentication_kerberos_client
     cmake --build . --target authentication_webauthn_client
@@ -332,9 +322,9 @@ get_sources(){
     
     if [ "x$OS" = "xdeb" ]; then
         cd packaging/debian/
-        cmake . -DBUNDLED_ANTLR_DIR="/opt/antlr4/usr/local" -DBUNDLED_PYTHON_DIR="/usr/local/python311"
+        cmake . -DBUNDLED_ANTLR_DIR="/opt/antlr4/usr/local" -DBUNDLED_PYTHON_DIR="/usr/local/python312"
         cd ../../
-        cmake . -DBUILD_SOURCE_PACKAGE=1 -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_SSL=system -DPACKAGE_YEAR=$(date +%Y) -DHAVE_PYTHON=1 -DBUNDLED_PYTHON_DIR="/usr/local/python311" -DPYTHON_INCLUDE_DIRS="/usr/local/python311/include/python3.11" -DPYTHON_LIBRARIES="/usr/local/python311/lib/libpython3.11.so" -DBUNDLED_ANTLR_DIR="/opt/antlr4/usr/local"
+        cmake . -DBUILD_SOURCE_PACKAGE=1 -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_SSL=system -DPACKAGE_YEAR=$(date +%Y) -DHAVE_PYTHON=1 -DBUNDLED_PYTHON_DIR="/usr/local/python312" -DPYTHON_INCLUDE_DIRS="/usr/local/python312/include/python3.12" -DPYTHON_LIBRARIES="/usr/local/python312/lib/libpython3.12.so" -DBUNDLED_ANTLR_DIR="/opt/antlr4/usr/local"
     else
         cmake . -DBUILD_SOURCE_PACKAGE=1 -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_SSL=system -DPACKAGE_YEAR=$(date +%Y) -DBUNDLED_ANTLR_DIR="/opt/antlr4/usr/local"
     fi
@@ -447,7 +437,7 @@ build_python(){
 	    pversion="3.8.9"
         fi
     else # OS=deb
-        pversion="3.11.3"
+        pversion="3.12.3"
     fi
     arraypversion=(${pversion//\./ })
     wget --no-check-certificate https://www.python.org/ftp/python/${pversion}/Python-${pversion}.tgz
@@ -474,7 +464,7 @@ build_python(){
             ./configure --prefix=/usr/local/python39 --with-system-ffi --enable-shared LDFLAGS=-Wl,-rpath=/usr/local/python39/lib
         fi
     else
-        ./configure --prefix=/usr/local/python311 --with-system-ffi --enable-shared LDFLAGS=-Wl,-rpath=/usr/local/python311/lib
+        ./configure --prefix=/usr/local/python312 --with-system-ffi --enable-shared LDFLAGS=-Wl,-rpath=/usr/local/python312/lib
     fi
     make
     make altinstall
@@ -486,8 +476,8 @@ build_python(){
         update-alternatives --install /usr/bin/python3 python3 /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} 100
         update-alternatives --remove-all pip3
         update-alternatives --install /usr/bin/pip3 pip3 /usr/local/python3${arraypversion[1]}/bin/pip3 100
-        cp /usr/local/python311/lib/libpython3.11.so.1.0 /usr/lib/x86_64-linux-gnu/
-        sed -i 's:/usr/bin/python3 -Es:/usr/bin/python3.11 -Es:' /usr/bin/lsb_release
+        cp /usr/local/python312/lib/libpython3.12.so.1.0 /usr/lib/x86_64-linux-gnu/
+        sed -i 's:/usr/bin/python3 -Es:/usr/bin/python3.12 -Es:' /usr/bin/lsb_release
         if [ "x$OS_NAME" = "xbionic" ]; then
             sed -i 's:/usr/bin/python3 -Es:/usr/bin/python3.6 -Es:' /usr/bin/lsb_release
         fi
@@ -936,7 +926,7 @@ build_srpm(){
     sed -i 's/@PRODUCT@/MySQL Shell/' mysql-shell.spec
     sed -i "s/@MYSH_VERSION@/${SHELL_BRANCH}/g" mysql-shell.spec
     sed -i 's:1%{?dist}:1%{?dist}:g'  mysql-shell.spec
-    sed -i "s:-DHAVE_PYTHON=1: -DHAVE_PYTHON=2 -DPACKAGE_YEAR=${CURRENT_YEAR} -DWITH_PROTOBUF=bundled -DPROTOBUF_INCLUDE_DIRS=/usr/local/include -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a -DWITH_STATIC_LINKING=ON -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ -DMYSQL_EXTRA_LIBRARIES='-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata' -DUSE_LD_GOLD=0 :" mysql-shell.spec
+    sed -i "s:-DHAVE_PYTHON=1: -DHAVE_PYTHON=2 -DPACKAGE_YEAR=${CURRENT_YEAR} -DWITH_PROTOBUF=system -DPROTOBUF_INCLUDE_DIRS=/usr/local/include -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a -DWITH_STATIC_LINKING=ON -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ -DMYSQL_EXTRA_LIBRARIES='-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata' -DUSE_LD_GOLD=0 :" mysql-shell.spec
     sed -i "s|BuildRequires:  python-devel|%if 0%{?rhel} > 7\nBuildRequires:  python2-devel\n%else\nBuildRequires:  python-devel\n%endif|" mysql-shell.spec
     sed -i 's:>= 0.9.2::' mysql-shell.spec
     sed -i 's:libssh-devel:gcc:' mysql-shell.spec
@@ -1143,7 +1133,7 @@ build_deb(){
     cp debian/mysql-shell.install debian/install
     echo "usr/lib/mysqlsh/libssh*.so*" >> debian/install
     sed -i 's:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null\n\tmv debian/tmp/usr/local/* debian/tmp/usr/\n\trm -rf debian/tmp/usr/local:' debian/rules
-    sed -i "s:VERBOSE=1:-DBUNDLED_PYTHON_DIR=\"/usr/local/python311\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python311/include/python3.11\" -DPYTHON_LIBRARIES=\"/usr/local/python311/lib/libpython3.11.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=${WORKDIR}/protobuf/src -DV8_INCLUDE_DIR=${WORKDIR}/v8/include -DV8_LIB_DIR=${WORKDIR}/v8/out.gn/static/obj -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ . \n\t DEB_BUILD_HARDENING=1 make -j8 VERBOSE=1:" debian/rules
+    sed -i "s:VERBOSE=1:-DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=${WORKDIR}/protobuf/src -DV8_INCLUDE_DIR=${WORKDIR}/v8/include -DV8_LIB_DIR=${WORKDIR}/v8/out.gn/static/obj -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ . \n\t DEB_BUILD_HARDENING=1 make -j8 VERBOSE=1:" debian/rules
     if [ "x$OS_NAME" != "xbuster" ]; then
         sed -i 's:} 2>/dev/null:} 2>/dev/null\n\tmv debian/tmp/usr/local/* debian/tmp/usr/\n\tcp debian/../bin/* debian/tmp/usr/bin/\n\trm -fr debian/tmp/usr/local:' debian/rules
     else
@@ -1228,7 +1218,7 @@ build_tarball(){
                 -DHAVE_PYTHON=1 \
                 -DWITH_OCI=$WORKDIR/oci_sdk \
                 -DWITH_STATIC_LINKING=ON \
-                -DWITH_PROTOBUF=bundled \
+                -DWITH_PROTOBUF=system \
                 -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib \
                 -DPROTOBUF_INCLUDE_DIRS=/usr/local/include \
                 -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a \
@@ -1247,7 +1237,7 @@ build_tarball(){
                 -DHAVE_PYTHON=1 \
                 -DWITH_OCI=$WORKDIR/oci_sdk \
                 -DWITH_STATIC_LINKING=ON \
-                -DWITH_PROTOBUF=bundled \
+                -DWITH_PROTOBUF=system \
                 -DPROTOBUF_INCLUDE_DIRS=/usr/local/include \
                 -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a\
                 -DPYTHON_INCLUDE_DIRS=/usr/local/python39/include/python3.9 \
@@ -1267,7 +1257,7 @@ build_tarball(){
                 -DWITH_OCI=$WORKDIR/oci_sdk \
                 -DWITH_STATIC_LINKING=ON \
                 -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib \
-                -DWITH_PROTOBUF=bundled \
+                -DWITH_PROTOBUF=system \
                 -DPROTOBUF_INCLUDE_DIRS=/usr/local/include \
                 -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a\
                 -DBUNDLED_OPENSSL_DIR=/usr/local/openssl11 \
@@ -1289,9 +1279,9 @@ build_tarball(){
             -DWITH_OCI=$WORKDIR/oci_sdk \
             -DWITH_STATIC_LINKING=ON \
             -DBUNDLED_ANTLR_DIR=/opt/antlr4/usr/local \
-            -DBUNDLED_PYTHON_DIR=/usr/local/python311 \
-            -DPYTHON_INCLUDE_DIRS=/usr/local/python311/include/python3.11 \
-            -DPYTHON_LIBRARIES=/usr/local/python311/lib/libpython3.11.so
+            -DBUNDLED_PYTHON_DIR=/usr/local/python312 \
+            -DPYTHON_INCLUDE_DIRS=/usr/local/python312/include/python3.12 \
+            -DPYTHON_LIBRARIES=/usr/local/python312/lib/libpython3.12.so
     fi
     make -j4
     mkdir ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}
@@ -1323,7 +1313,7 @@ OS=
 PROTOBUF_REPO="https://github.com/protocolbuffers/protobuf.git"
 SHELL_REPO="https://github.com/mysql/mysql-shell.git"
 SHELL_BRANCH="8.0.31"
-PROTOBUF_BRANCH=v3.19.4
+PROTOBUF_BRANCH=v4.24.4
 INSTALL=0
 REVISION=0
 BRANCH="release-8.0.31-23"
