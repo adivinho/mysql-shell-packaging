@@ -602,7 +602,7 @@ install_deps() {
         else
             yum -y install git
             yum -y install gcc openssl-devel bzip2-devel libffi libffi-devel
-            yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm || true
+            yum -y install https://repo.percona.com/prel/yum/release/latest/RPMS/x86_64/percona-release-1.0-27.noarch.rpm
             yum -y install epel-release
             yum -y install git numactl-devel rpm-build gcc-c++ gperf ncurses-devel perl readline-devel openssl-devel jemalloc 
             yum -y install time zlib-devel libaio-devel bison cmake pam-devel libeatmydata jemalloc-devel
@@ -646,7 +646,6 @@ install_deps() {
             python3 -m pip install --upgrade setuptools
         fi
         if [ "x$RHEL" = "x6" ]; then
-            yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
             percona-release enable tools testing
             yum -y install Percona-Server-shared-56
             yum install -y percona-devtoolset-gcc percona-devtoolset-binutils python-devel percona-devtoolset-gcc-c++ percona-devtoolset-libstdc++-devel percona-devtoolset-valgrind-devel
