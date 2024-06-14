@@ -529,7 +529,7 @@ install_deps() {
             yum -y install yum-utils
             yum-config-manager --enable ol9_codeready_builder
         else
-            if [ x"$ARCH" = "xx86_64" ]; then
+            if [ x"$ARCH" = "xx86_64" -a x"$RHEL" = "x8" ]; then
                 # add_percona_yum_repo
                 curl -O https://downloads.percona.com/downloads/TESTING/issue-CUSTO83/rpcgen-1.4-1.fc29.x86_64.rpm
                 curl -O https://downloads.percona.com/downloads/TESTING/issue-CUSTO83/gperf-3.1-6.el8.x86_64.rpm
