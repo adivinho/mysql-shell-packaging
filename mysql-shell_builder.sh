@@ -170,7 +170,7 @@ get_protobuf(){
             source /opt/rh/rh-python38/enable
         fi
     fi
-    cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_SHARED_LIBS=ON
+    cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_SHARED_LIBS=ON -DABSL_PROPAGATE_CXX_STD=ON
     cmake --build .
     ctest --verbose
     cmake --install .
@@ -672,7 +672,7 @@ install_deps() {
             python3 -m pip install setuptools
             python3 -m pip install --upgrade setuptools
             build_oci_sdk
-            get_cmake 3.14.7
+            #get_cmake 3.14.7
             source /opt/rh/devtoolset-7/enable
             g++ --version
         fi
