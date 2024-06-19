@@ -175,6 +175,12 @@ get_protobuf(){
     ctest --verbose
     cmake --install .
     export PATH=$MY_PATH
+    protoc --version
+    cd ..
+    wget https://github.com/protocolbuffers/protobuf/releases/download/v24.4/protoc-24.4-linux-x86_64.zip
+    unzip protoc-24.4-linux-x86_64.zip
+    cp bin/protoc /usr/local/bin
+    cp -r include/* /usr/local/include
     return
 }
 
