@@ -251,6 +251,7 @@ get_database(){
     cmake --build . --target authentication_oci_client
     cmake --build . --target mysqlclient
     cmake --build . --target mysqlxclient
+    cmake --build . --target authentication_fido_client
     #cmake --build . --target authentication_fido_client
     cmake --build . --target authentication_ldap_sasl_client
     cmake --build . --target authentication_kerberos_client
@@ -520,7 +521,7 @@ install_deps() {
     if [ "x$OS" = "xrpm" ]; then
         RHEL=$(rpm --eval %rhel)
         ARCH=$(echo $(uname -m) | sed -e 's:i686:i386:g')
-        if [ $RHEL = 8 -o $RHEL = 7]; then
+        if [ $RHEL = 8 -o $RHEL = 7 ]; then
             if [ x"$ARCH" = "xx86_64" ]; then
                 sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                 sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
