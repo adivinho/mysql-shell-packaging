@@ -717,6 +717,7 @@ install_deps() {
         apt-get -y install uuid-dev
         apt-get -y install pkg-config
         apt-get -y install libudev-dev
+        apt-get -y install libbsd-dev
         if [ x"${DIST}" = xfocal ]; then
             apt-get -y install gcc-10 g++-10
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 50 --slave /usr/bin/g++ g++ /usr/bin/g++-9
