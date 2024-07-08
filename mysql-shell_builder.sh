@@ -257,8 +257,9 @@ get_database(){
     cmake --build . --target authentication_oci_client
     cmake --build . --target mysqlclient
     cmake --build . --target mysqlxclient
-    cmake --build . --target authentication_fido_client
-    #cmake --build . --target authentication_fido_client
+    if [ ${SHELL_BRANCH:2:1} = 0 ]; then
+        cmake --build . --target authentication_fido_client
+    fi
     cmake --build . --target authentication_ldap_sasl_client
     cmake --build . --target authentication_kerberos_client
     cmake --build . --target authentication_webauthn_client
@@ -1227,11 +1228,7 @@ build_tarball(){
             source /opt/rh/devtoolset-11/enable
         fi
         if [ $RHEL = 8 ]; then
-            if [ ${SHELL_BRANCH:2:1} = 1 ]; then
-                source /opt/rh/gcc-toolset-11/enable
-            else
-                source /opt/rh/gcc-toolset-12/enable
-            fi
+            source /opt/rh/gcc-toolset-12/enable
         fi
         if [ $RHEL = 9 ]; then
             source /opt/rh/gcc-toolset-12/enable
