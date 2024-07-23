@@ -79,6 +79,8 @@ fix_duplicates(){
     rm /usr/lib64/perl5/vendor_perl/auto/Params/Util/Util.so
     rm /usr/lib64/p11-kit-trust.so
     rm -rf /usr/lib64/device-mapper/
+    rm /usr/lib/x86_64-linux-gnu/perl/5.30.0/auto/Cwd/Cwd.so
+    rm -rf /usr/lib/x86_64-linux-gnu/mit-krb5/
 }
 
 check_workdir(){
@@ -345,6 +347,8 @@ get_sources(){
     #sed -i 's:3.8:3.6:g' packaging/debian/CMakeLists.txt
     #sed -i 's:3.8:3.6:g' packaging/rpm/mysql-shell.spec.in
     sed -i 's:execute_patchelf:# execute_patchelf:g' cmake/exeutils.cmake
+    sed -i '/create a dependency/i \if(NOT TARGET \"${COPY_TARGET}\")' cmake/exeutils.cmake
+    sed -i '/APPEND COPIED_BINARIES/a endif()' cmake/exeutils.cmake
     sed -i 's:quilt:native:g' packaging/debian/source/format
     
     if [ "x$OS" = "xdeb" ]; then
@@ -1047,7 +1051,6 @@ build_rpm(){
         source /opt/rh/devtoolset-7/enable
     fi
     get_antlr4-runtime
-    fix_duplicates
     cd ${WORKDIR}
     #
     if [ ${RHEL} = 6 ]; then
