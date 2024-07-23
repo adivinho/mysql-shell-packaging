@@ -72,6 +72,15 @@ parse_arguments() {
     done
 }
 
+fix_duplicates(){
+    rm /usr/lib64/perl5/CORE/libperl.so
+    rm /usr/lib64/perl5/vendor_perl/auto/Compress/Raw/Bzip2/Bzip2.so
+    rm /usr/lib64/perl5/vendor_perl/auto/List/Util/Util.so
+    rm /usr/lib64/perl5/vendor_perl/auto/Params/Util/Util.so
+    rm /usr/lib64/p11-kit-trust.so
+    rm -rf /usr/lib64/device-mapper/
+}
+
 check_workdir(){
     if [ "x$WORKDIR" = "x$CURDIR" ]
     then
@@ -549,9 +558,9 @@ install_deps() {
         else
             if [ x"$ARCH" = "xx86_64" -a x"$RHEL" = "x8" ]; then
                 # add_percona_yum_repo
-                curl -O https://downloads.percona.com/downloads/TESTING/issue-CUSTO83/rpcgen-1.4-1.fc29.x86_64.rpm
-                curl -O https://downloads.percona.com/downloads/TESTING/issue-CUSTO83/gperf-3.1-6.el8.x86_64.rpm
-                curl -O https://downloads.percona.com/downloads/TESTING/issue-CUSTO83/MySQL-python-1.3.6-3.el8.x86_64.rpm
+                curl -O https://downloads.percona.com/downloads/packaging/rpcgen-1.4-1.fc29.x86_64.rpm
+                curl -O https://downloads.percona.com/downloads/packaging/gperf-3.1-6.el8.x86_64.rpm
+                curl -O https://downloads.percona.com/downloads/packaging/MySQL-python-1.3.6-3.el8.x86_64.rpm
                 yum -y install ./rpcgen-1.4-1.fc29.x86_64.rpm
                 yum -y install ./gperf-3.1-6.el8.x86_64.rpm
                 yum -y install ./MySQL-python-1.3.6-3.el8.x86_64.rpm
@@ -1038,6 +1047,7 @@ build_rpm(){
         source /opt/rh/devtoolset-7/enable
     fi
     get_antlr4-runtime
+    fix_duplicates
     cd ${WORKDIR}
     #
     if [ ${RHEL} = 6 ]; then
