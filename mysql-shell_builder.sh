@@ -72,17 +72,6 @@ parse_arguments() {
     done
 }
 
-fix_duplicates(){
-    rm /usr/lib64/perl5/CORE/libperl.so
-    rm /usr/lib64/perl5/vendor_perl/auto/Compress/Raw/Bzip2/Bzip2.so
-    rm /usr/lib64/perl5/vendor_perl/auto/List/Util/Util.so
-    rm /usr/lib64/perl5/vendor_perl/auto/Params/Util/Util.so
-    rm /usr/lib64/p11-kit-trust.so
-    rm -rf /usr/lib64/device-mapper/
-    rm /usr/lib/x86_64-linux-gnu/perl/5.30.0/auto/Cwd/Cwd.so
-    rm -rf /usr/lib/x86_64-linux-gnu/mit-krb5/
-}
-
 check_workdir(){
     if [ "x$WORKDIR" = "x$CURDIR" ]
     then
@@ -778,17 +767,8 @@ install_deps() {
             apt-get -y install gcc-4.9 g++-4.9
             sed -i 's;deb http://ftp.us.debian.org/debian/ jessie main contrib non-free;;' /etc/apt/sources.list
             apt-get update
-        elif [ "x${DIST}" = "xfocal" -o "x${DIST}" = "xbullseye" -o "x${DIST}" = "xbookworm" ]; then
+        elif [ "x${DIST}" = "xfocal" -o "x${DIST}" = "xjammy" -o "x${DIST}" = "xbookworm" -o "x${DIST}" = "xnoble" ]; then
             apt-get -y install python3-mysqldb
-            #echo "deb http://archive.ubuntu.com/ubuntu bionic main restricted" >> /etc/apt/sources.list
-            #echo "deb http://archive.ubuntu.com/ubuntu bionic-updates main restricted" >> /etc/apt/sources.list
-            #echo "deb http://archive.ubuntu.com/ubuntu bionic universe" >> /etc/apt/sources.list
-            #apt-get update
-            #apt-get -y install gcc-4.8 g++-4.8
-            #sed -i 's;deb http://archive.ubuntu.com/ubuntu bionic main restricted;;' /etc/apt/sources.list
-            #sed -i 's;deb http://archive.ubuntu.com/ubuntu bionic-updates main restricted;;' /etc/apt/sources.list
-            #sed -i 's;deb http://archive.ubuntu.com/ubuntu bionic universe;;' /etc/apt/sources.list
-            #apt-get update
             apt install -y gcc-10 g++-10 cpp-10
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
         else
