@@ -807,8 +807,11 @@ install_deps() {
         if [ "x${DIST}" = "xxenial" ]; then
             get_cmake 3.6.3
         fi
-        if [ "x${DIST}" = "xbionic" -o "x${DIST}" = "xbuster" ]; then
+        if [ "x${DIST}" = "xbionic" -o "x${DIST}" = "xbuster" -o "x${DIST}" = "xjammy" ]; then
             build_ssh
+            get_cmake 3.16.3
+        fi
+        if [ "x${DIST}" = "xjammy" -o "x${DIST}" = "xnoble" ]; then
             get_cmake 3.16.3
         fi
         build_python
