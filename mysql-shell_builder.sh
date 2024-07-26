@@ -767,7 +767,7 @@ install_deps() {
             apt-get -y install gcc-4.9 g++-4.9
             sed -i 's;deb http://ftp.us.debian.org/debian/ jessie main contrib non-free;;' /etc/apt/sources.list
             apt-get update
-        elif [ "x${DIST}" = "xfocal" -o "x${DIST}" = "xjammy" -o "x${DIST}" = "xbookworm" -o "x${DIST}" = "xnoble" ]; then
+        elif [ "x${DIST}" = "xfocal" -o "x${DIST}" = "xbookworm" ]; then
             apt-get -y install python3-mysqldb
             apt install -y gcc-10 g++-10 cpp-10
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
