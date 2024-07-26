@@ -1118,7 +1118,7 @@ build_deb(){
         echo "It is not possible to build source deb here"
         exit 1
     fi
-    #build_ssh
+    build_ssh
     for file in 'dsc' 'orig.tar.gz' 'changes' 'tar.xz'
     do
         get_deb_sources $file
