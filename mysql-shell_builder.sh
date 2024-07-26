@@ -806,9 +806,9 @@ install_deps() {
             build_ssh
             get_cmake 3.16.3
         fi
-        if [ "x${DIST}" = "xjammy" -o "x${DIST}" = "xnoble" ]; then
-            get_cmake 3.16.3
-        fi
+        #if [ "x${DIST}" = "xjammy" -o "x${DIST}" = "xnoble" ]; then
+        #    get_cmake 3.16.3
+        #fi
         build_python
         ln -s /usr/local/python3.11/lib /usr/lib/python3.11
     fi
@@ -1143,6 +1143,9 @@ build_deb(){
     get_database
     get_v8
     build_oci_sdk
+    if [ "x${DIST}" = "xjammy" -o "x${DIST}" = "xnoble" ]; then
+        get_cmake 3.16.3
+    fi
     cd ${WORKDIR}/percona-mysql-shell-$SHELL_BRANCH-1
     sed -i 's:3.8:3.6:' CMakeLists.txt
     sed -i 's/make -j8/make -j8\n\t/' debian/rules
