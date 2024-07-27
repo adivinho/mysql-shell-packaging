@@ -748,8 +748,8 @@ install_deps() {
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
         elif [ x"${DIST}" = xnoble ]; then
             apt-get -y install libtirpc-dev
-            apt-get -y install gcc-12 g++-12
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
+            apt-get -y install gcc-11 g++-11
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
         else
             apt-get -y install gcc g++
         fi
@@ -1143,7 +1143,7 @@ build_deb(){
     get_database
     get_v8
     build_oci_sdk
-    if [ "x${DIST}" = "xjammy" -o "x${DIST}" = "xnoble" ]; then
+    if [ "x${DEBIAN_VERSION}" = "xjammy" -o "x${DEBIAN_VERSION}" = "xnoble" ]; then
         get_cmake 3.16.3
     fi
     cd ${WORKDIR}/percona-mysql-shell-$SHELL_BRANCH-1
