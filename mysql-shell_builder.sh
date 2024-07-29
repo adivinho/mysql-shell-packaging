@@ -172,7 +172,6 @@ get_protobuf(){
     fi
     cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_SHARED_LIBS=ON -DABSL_PROPAGATE_CXX_STD=ON
     cmake --build .
-    ctest --verbose
     cmake --install .
     export PATH=$MY_PATH
     protoc --version
@@ -252,6 +251,7 @@ get_database(){
         fi
     else
         cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
+        sed -i 's/ -D_FORTIFY_SOURCE=3//g' extra/libfido2/libfido2-1.13.0/src/CMakeFiles/fido2.dir/flags.make
     fi
 
     cmake --build . --target authentication_oci_client
