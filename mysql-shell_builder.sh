@@ -742,14 +742,9 @@ install_deps() {
         apt-get -y install pkg-config
         apt-get -y install libudev-dev
         apt-get -y install libbsd-dev
-        if [ x"${DIST}" = xfocal -o "x${DIST}" = "xbookworm" ]; then
-            apt-get -y install python3-mysqldb
+        if [ x"${DIST}" = "xfocal" -o x"${DIST}" = "xjammy" -o "x${DIST}" = "xbookworm" -o "x${DIST}" = "xnoble" ]; then
             apt-get -y install gcc-10 g++-10
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
-        elif [ x"${DIST}" = xnoble ]; then
-            apt-get -y install libtirpc-dev
-            apt-get -y install gcc-11 g++-11
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11
         else
             apt-get -y install gcc g++
         fi
@@ -757,7 +752,7 @@ install_deps() {
             apt-get -y install libssh2-1-dev
         fi
         if [ "x${DIST}" = "xbookworm" -o "x${DIST}" = "xnoble" ]; then
-            apt-get -y install python3-virtualenv
+            apt-get -y install python3-virtualenv libtirpc-dev
         fi
         if [ "x${DIST}" = "xstretch" ]; then
             echo "deb http://ftp.us.debian.org/debian/ jessie main contrib non-free" >> /etc/apt/sources.list
