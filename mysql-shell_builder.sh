@@ -742,7 +742,7 @@ install_deps() {
         apt-get -y install pkg-config
         apt-get -y install libudev-dev
         apt-get -y install libbsd-dev
-        if [ x"${DIST}" = "xfocal" -o x"${DIST}" = "xjammy" -o "x${DIST}" = "xbookworm" -o "x${DIST}" = "xnoble" ]; then
+        if [ x"${DIST}" = "xfocal" -o "x${DIST}" = "xbookworm" ]; then
             apt-get -y install gcc-10 g++-10
             update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10 --slave /usr/bin/gcov gcov /usr/bin/gcov-10
         else
@@ -1138,9 +1138,9 @@ build_deb(){
     get_database
     get_v8
     build_oci_sdk
-    if [ "x${DEBIAN_VERSION}" = "xjammy" -o "x${DEBIAN_VERSION}" = "xnoble" ]; then
-        get_cmake 3.16.3
-    fi
+    #if [ "x${DEBIAN_VERSION}" = "xjammy" -o "x${DEBIAN_VERSION}" = "xnoble" ]; then
+    #    get_cmake 3.16.3
+    #fi
     cd ${WORKDIR}/percona-mysql-shell-$SHELL_BRANCH-1
     sed -i 's:3.8:3.6:' CMakeLists.txt
     sed -i 's/make -j8/make -j8\n\t/' debian/rules
@@ -1150,7 +1150,7 @@ build_deb(){
     echo "usr/lib/mysqlsh/libssh*.so*" >> debian/install
     sed -i 's:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null\n\tmv debian/tmp/usr/local/* debian/tmp/usr/\n\trm -rf debian/tmp/usr/local:' debian/rules
     if [ "x${DEBIAN_VERSION}" = "xjammy" -o "x${DEBIAN_VERSION}" = "xnoble" ]; then
-        sed -i "s:VERBOSE=1:-DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DV8_INCLUDE_DIR=${WORKDIR}/v8/include -DV8_LIB_DIR=${WORKDIR}/v8/out.gn/static/obj -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ . \n\t make VERBOSE=1:" debian/rules
+        sed -i "s:VERBOSE=1:-DCMAKE_SHARED_LINKER_FLAGS="" -DCMAKE_MODULE_LINKER_FLAGS="" -DCMAKE_CXX_FLAGS="" -DCMAKE_C_FLAGS="" -DCMAKE_EXE_LINKER_FLAGS="" -DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DV8_INCLUDE_DIR=${WORKDIR}/v8/include -DV8_LIB_DIR=${WORKDIR}/v8/out.gn/static/obj -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ . \n\t make VERBOSE=1:" debian/rules
     else
         sed -i "s:VERBOSE=1:-DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DV8_INCLUDE_DIR=${WORKDIR}/v8/include -DV8_LIB_DIR=${WORKDIR}/v8/out.gn/static/obj -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk -DBUNDLED_SSH_DIR=${WORKDIR}/libssh-0.9.3/build/ . \n\t DEB_BUILD_HARDENING=1 make -j8 VERBOSE=1:" debian/rules
     fi
