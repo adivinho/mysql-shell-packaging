@@ -268,6 +268,10 @@ get_database(){
     if [ ${SHELL_BRANCH:2:1} != 0 ]; then
         cmake --build . --target authentication_webauthn_client
     fi
+    if [ ${SHELL_BRANCH:0:1} = 9 ]; then
+        cmake --build . --target authentication_openid_connect_client
+        cmake --build . --target mysql_native_password
+    fi
     cd $WORKDIR
     export PATH=$MY_PATH
     return
@@ -668,17 +672,17 @@ install_deps() {
                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                 fi
-#                if [ ${SHELL_BRANCH:2:1} = 0 ]; then
-#                    yum -y install gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-binutils # gcc-toolset-10-annobin
-#                    yum -y install gcc-toolset-11-annobin-annocheck gcc-toolset-11-annobin-plugin-gcc
-#                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-11/root/bin/gcc 80
-#                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-11/root/bin/g++ 80
-#                else
+                if [ ${SHELL_BRANCH:0:1} = 9 ]; then
+                    yum -y install gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-binutils
+                    yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-plugin-gcc
+                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
+                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
+                else
                     yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils # gcc-toolset-10-annobin
                     yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
                     update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
                     update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
-#                fi
+                fi
                 if [ x"$ARCH" = "xx86_64" ]; then
                     yum -y remove centos-release-stream
                 fi
@@ -817,7 +821,7 @@ install_deps() {
         apt-get -y install libeatmydata
         apt-get -y install libmecab2 mecab mecab-ipadic libicu-dev
         apt-get -y install build-essential devscripts doxygen doxygen-gui graphviz rsync libprotobuf-dev protobuf-compiler
-        apt-get -y install cmake autotools-dev autoconf automake build-essential devscripts debconf debhelper fakeroot libtool
+        apt-get -y install autotools-dev autoconf automake build-essential devscripts debconf debhelper fakeroot libtool
         apt-get -y install libicu-dev pkg-config zip
         apt-get -y install libtirpc
         apt-get -y install patchelf
@@ -884,8 +888,8 @@ install_deps() {
         fi
         ${PIP_UTIL} install virtualenv || pip install virtualenv || pip3 install virtualenv || true
         build_oci_sdk
-        if [ "x${DIST}" = "xxenial" ]; then
-            get_cmake 3.6.3
+        if [ "x${DIST}" = "xfocal" ]; then
+            get_cmake 3.17.5
         fi
         if [ "x${DIST}" = "xbionic" -o "x${DIST}" = "xbuster" ]; then
             #build_ssh
