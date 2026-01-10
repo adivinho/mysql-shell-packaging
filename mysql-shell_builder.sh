@@ -272,6 +272,7 @@ get_database(){
         cmake --build . --target authentication_openid_connect_client
         cmake --build . --target mysql_native_password
         cmake --build . --target mysqlbinlog
+        cmake --build . --target mysql_binlog_event_standalone
     fi
     cd $WORKDIR
     export PATH=$MY_PATH
@@ -674,10 +675,11 @@ install_deps() {
                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                 fi
                 if [ ${SHELL_BRANCH:0:1} = 9 ]; then
-                    yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
-                    yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-plugin-gcc
+                    yum -y install gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-binutils
+                    yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-plugin-gcc
                     update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
                     update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
+                    yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
                 else
                     yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils # gcc-toolset-10-annobin
                     yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
