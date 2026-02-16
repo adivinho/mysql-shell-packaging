@@ -223,6 +223,10 @@ get_database(){
         if [ "x$OS_NAME" = "xnoble" ]; then
             sed -i 's:D_FORTIFY_SOURCE=2:D_FORTIFY_SOURCE=3:g' CMakeLists.txt
         fi
+        pushd router/src/routing_guidelines/src
+        /usr/bin/bison -t --no-lines --warnings=all,no-yacc,no-precedence --defines=parser.h --verbose -o parser.cc parser.yy
+        ls
+        popd
     fi
     mkdir bld
     BOOST_VER="1.77.0"
