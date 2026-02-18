@@ -684,7 +684,6 @@ install_deps() {
                 update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
                 update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-12/root/bin/c++ 80
                 update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
-                fi
                 if [ x"$ARCH" = "xx86_64" ]; then
                     yum -y remove centos-release-stream
                 fi
