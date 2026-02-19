@@ -679,11 +679,11 @@ install_deps() {
                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                 fi
-                yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils # gcc-toolset-10-annobin
-                yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
-                update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
-                update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-12/root/bin/c++ 80
-                update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
+                yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils # gcc-toolset-10-annobin
+                yum -y install gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-plugin-gcc
+                update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-13/root/bin/gcc 80
+                update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-13/root/bin/c++ 80
+                update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-13/root/bin/g++ 80
                 if [ x"$ARCH" = "xx86_64" ]; then
                     yum -y remove centos-release-stream
                 fi
@@ -711,6 +711,7 @@ install_deps() {
                         update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
                         update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-14/root/bin/c++ 80
                         update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
+                        yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
                     else
                         yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
                         update-alternatives --install /usr/bin/cc cc /opt/rh/gcc-toolset-12/root/bin/cc 80
