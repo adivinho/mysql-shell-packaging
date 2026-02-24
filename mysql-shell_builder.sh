@@ -220,9 +220,16 @@ get_database(){
         if [[ $RHEL = 8 && ${SHELL_BRANCH:2:1} = 1 ]]; then
             sed -i 's:gcc-toolset-12:gcc-toolset-11:g' CMakeLists.txt
         fi
+        if [[ $RHEL = 9 && ${SHELL_BRANCH:0:1} = 9 ]]; then
+            sed -i 's:gcc-toolset-14:gcc-toolset-13:g' CMakeLists.txt
+        fi
         if [ "x$OS_NAME" = "xnoble" ]; then
             sed -i 's:D_FORTIFY_SOURCE=2:D_FORTIFY_SOURCE=3:g' CMakeLists.txt
         fi
+        pushd router/src/routing_guidelines/src
+        /usr/bin/bison -t --no-lines --warnings=all,no-yacc,no-precedence --defines=parser.h --verbose -o parser.cc parser.yy
+        ls
+        popd
     fi
     mkdir bld
     BOOST_VER="1.77.0"
@@ -248,13 +255,13 @@ get_database(){
             cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=/usr/local/openssl11 -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system
         else
             if [ $RHEL = 10 ]; then
-                cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1
+                cmake .. -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1 -DWITH_ADMINAPI=OFF
             else
-                cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1
+                cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -Dantlr4-runtime_DIR=/opt/antlr4/usr/local/lib64/cmake/antlr4-runtime -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1 -DWITH_ADMINAPI=OFF
             fi
         fi
     else
-        cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1
+        cmake .. -DENABLE_DOWNLOADS=1 -DWITH_SSL=system -DWITH_BOOST=$WORKDIR/boost -DWITH_PROTOBUF=system -DWITH_ZLIB=bundled -DWITH_COREDUMPER=OFF -DWITH_CURL=system -DALLOW_NO_SSE42=1 -DWITH_ADMINAPI=OFF
     fi
 
     cmake --build . --target authentication_oci_client
@@ -267,6 +274,13 @@ get_database(){
     cmake --build . --target authentication_kerberos_client
     if [ ${SHELL_BRANCH:2:1} != 0 ]; then
         cmake --build . --target authentication_webauthn_client
+    fi
+    if [ ${SHELL_BRANCH:0:1} = 9 ]; then
+        cmake --build . --target authentication_openid_connect_client
+        cmake --build . --target mysql_native_password
+        cmake --build . --target mysqlbinlog
+        cmake --build . --target mysql_binlog_event_standalone
+        cp -v ../router/src/routing_guidelines/src/parser.cc router/src/routing_guidelines/src/
     fi
     cd $WORKDIR
     export PATH=$MY_PATH
@@ -668,17 +682,12 @@ install_deps() {
                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                 fi
-#                if [ ${SHELL_BRANCH:2:1} = 0 ]; then
-#                    yum -y install gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-binutils # gcc-toolset-10-annobin
-#                    yum -y install gcc-toolset-11-annobin-annocheck gcc-toolset-11-annobin-plugin-gcc
-#                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-11/root/bin/gcc 80
-#                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-11/root/bin/g++ 80
-#                else
-                    yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils # gcc-toolset-10-annobin
-                    yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
-                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
-                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
-#                fi
+                yum -y install gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-binutils # gcc-toolset-10-annobin
+                yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-plugin-gcc
+                update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
+                update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-14/root/bin/c++ 80
+                update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
+                yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
                 if [ x"$ARCH" = "xx86_64" ]; then
                     yum -y remove centos-release-stream
                 fi
@@ -700,14 +709,19 @@ install_deps() {
                     mv /usr/bin/gcc /usr/bin/gcc.orig
                     mv /usr/bin/c++ /usr/bin/c++.orig
                     mv /usr/bin/g++ /usr/bin/g++.orig
-                    yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
-                    update-alternatives --install /usr/bin/cc cc /opt/rh/gcc-toolset-12/root/bin/cc 80
-                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
-                    update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-12/root/bin/c++ 80
-                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
-                 #   pushd /opt/rh/gcc-toolset-12/root/usr/lib/gcc/${ARCH}-redhat-linux/12/plugin/
-                 #       ln -s annobin.so gcc-annobin.so
-                 #   popd
+                    if [ ${SHELL_BRANCH:0:1} = 9 ]; then
+                        yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-plugin-gcc
+                        update-alternatives --install /usr/bin/cc cc /opt/rh/gcc-toolset-13/root/bin/cc 80
+                        update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-13/root/bin/gcc 80
+                        update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-13/root/bin/c++ 80
+                        update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-13/root/bin/g++ 80
+                    else
+                        yum -y install gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-binutils gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
+                        update-alternatives --install /usr/bin/cc cc /opt/rh/gcc-toolset-12/root/bin/cc 80
+                        update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
+                        update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-12/root/bin/c++ 80
+                        update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
+                    fi
                 else
                     yum -y install gcc gcc-c++
                 fi
@@ -817,7 +831,7 @@ install_deps() {
         apt-get -y install libeatmydata
         apt-get -y install libmecab2 mecab mecab-ipadic libicu-dev
         apt-get -y install build-essential devscripts doxygen doxygen-gui graphviz rsync libprotobuf-dev protobuf-compiler
-        apt-get -y install cmake autotools-dev autoconf automake build-essential devscripts debconf debhelper fakeroot libtool
+        apt-get -y install autotools-dev autoconf automake build-essential devscripts debconf debhelper fakeroot libtool
         apt-get -y install libicu-dev pkg-config zip
         apt-get -y install libtirpc
         apt-get -y install patchelf
@@ -884,8 +898,8 @@ install_deps() {
         fi
         ${PIP_UTIL} install virtualenv || pip install virtualenv || pip3 install virtualenv || true
         build_oci_sdk
-        if [ "x${DIST}" = "xxenial" ]; then
-            get_cmake 3.6.3
+        if [ "x${DIST}" = "xfocal" ]; then
+            get_cmake 3.17.5
         fi
         if [ "x${DIST}" = "xbionic" -o "x${DIST}" = "xbuster" ]; then
             #build_ssh
@@ -1030,11 +1044,10 @@ build_srpm(){
     sed -i 's/@PRODUCT@/MySQL Shell/' mysql-shell.spec
     sed -i "s/@MYSH_VERSION@/${SHELL_BRANCH}/g" mysql-shell.spec
     sed -i 's:1%{?dist}:1%{?dist}:g'  mysql-shell.spec
-    sed -i "s:-DHAVE_PYTHON=1:-DHAVE_PYTHON=2 -DCMAKE_CXX_FLAGS_INIT=\"-Wno-error=stringop-overflow -Wno-error=maybe-uninitialized\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DWITH_PROTOBUF=system -DPROTOBUF_INCLUDE_DIRS=/usr/local/include -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a -DWITH_STATIC_LINKING=ON -DMYSQL_EXTRA_LIBRARIES='-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata' -DUSE_LD_GOLD=0 :" mysql-shell.spec
+    sed -i "s:-DHAVE_PYTHON=1:-DHAVE_PYTHON=2 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF -DCMAKE_CXX_FLAGS_INIT=\"-Wno-error=stringop-overflow -Wno-error=maybe-uninitialized -Wno-odr\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DWITH_PROTOBUF=system -DPROTOBUF_INCLUDE_DIRS=/usr/local/include -DPROTOBUF_LIBRARIES=/usr/local/lib/libprotobuf.a -DWITH_STATIC_LINKING=ON -DMYSQL_EXTRA_LIBRARIES='-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata' -DUSE_LD_GOLD=0 :" mysql-shell.spec
     sed -i "s|BuildRequires:  python-devel|%if 0%{?rhel} > 7 \|\|  0%{?amzn} >= 2023\nBuildRequires:  python2-devel\n%else\nBuildRequires:  python-devel\n%endif|" mysql-shell.spec
     sed -i 's:>= 0.9.2::' mysql-shell.spec
     sed -i 's:libssh-devel:gcc:' mysql-shell.spec
-    #sed -i '59,60d' mysql-shell.spec
     sed -i "s:prompt/::" mysql-shell.spec
     sed -i 's:%files:for file in $(ls -Ap %{buildroot}/usr/lib/mysqlsh/ | grep -v / | grep -v libpython | grep -v libantlr4-runtime | grep -v libfido | grep -v protobuf); do rm %{buildroot}/usr/lib/mysqlsh/$file; done\nif [[ -f "/opt/antlr4/usr/local/lib64/libantlr4-runtime.so" ]]; then cp /opt/antlr4/usr/local/lib64/libantlr4-runtime.s* %{buildroot}/usr/lib/mysqlsh/; fi\nif [[ -f "/tmp/polyglot-nativeapi-native-library/libjitexecutor.so" ]]; then cp /tmp/polyglot-nativeapi-native-library/libjitexecutor.so %{buildroot}/usr/lib/mysqlsh/; fi\n%files:' mysql-shell.spec
     sed -i 's:%files:if [[ -f "/usr/local/lib64/libprotobuf.so" ]]; then cp /usr/local/lib64/libprotobuf* %{buildroot}/usr/lib/mysqlsh/; cp /usr/local/lib64/libabsl_* %{buildroot}/usr/lib/mysqlsh/; cp /usr/local/lib64/libgmock* %{buildroot}/usr/lib/mysqlsh/; fi\n%files\n%{_prefix}/lib/mysqlsh/libprotobuf*\n%{_prefix}/lib/mysqlsh/libabsl_*\n%{_prefix}/lib/mysqlsh/libgmock*:' mysql-shell.spec
@@ -1112,6 +1125,12 @@ build_rpm(){
         source /opt/rh/rh-python38/enable
     elif [ $RHEL = 6 ]; then
         source /opt/rh/devtoolset-7/enable
+    elif [ $RHEL = 9 ]; then
+        yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils gcc-toolset-13-annobin-annocheck gcc-toolset-13-annobin-plugin-gcc
+        update-alternatives --install /usr/bin/cc cc /opt/rh/gcc-toolset-13/root/bin/cc 90
+        update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-13/root/bin/gcc 90
+        update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-13/root/bin/c++ 90
+        update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-13/root/bin/g++ 90
     fi
     get_antlr4-runtime
     cd ${WORKDIR}
@@ -1229,7 +1248,7 @@ build_deb(){
     #get_v8
     get_GraalVM
     build_oci_sdk
-    cd ${WORKDIR}/percona-mysql-shell-$SHELL_BRANCH-1
+    cd ${WORKDIR}/percona-mysql-shell-${SHELL_BRANCH}-${DEB_RELEASE}
     sed -i 's:3.8:3.6:' CMakeLists.txt
     sed -i 's/make -j8/make -j8\n\t/' debian/rules
     sed -i '/-DCMAKE/,/j8/d' debian/rules
@@ -1241,7 +1260,7 @@ build_deb(){
     echo "usr/lib/mysqlsh/libgmock.so*" >> debian/install
     sed -i 's:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null:-rm -fr debian/tmp/usr/lib*/*.{so*,a} 2>/dev/null\n\tmv debian/tmp/usr/local/* debian/tmp/usr/\n\trm -rf debian/tmp/usr/local:' debian/rules
     if [ "x${DEBIAN_VERSION}" = "xjammy" -o "x${DEBIAN_VERSION}" = "xnoble" ]; then
-        sed -i "s:VERBOSE=1:-DCMAKE_SHARED_LINKER_FLAGS="" -DCMAKE_MODULE_LINKER_FLAGS="" -DCMAKE_CXX_FLAGS="" -DCMAKE_C_FLAGS="" -DCMAKE_EXE_LINKER_FLAGS="" -DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=Release -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DJIT_EXECUTOR_LIB=${WORKDIR}/polyglot-nativeapi-native-library -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk . \n\t DEB_BUILD_HARDENING=1 make -j1 VERBOSE=1:" debian/rules
+        sed -i "s:VERBOSE=1:-DCMAKE_SHARED_LINKER_FLAGS="" -DCMAKE_MODULE_LINKER_FLAGS="" -DCMAKE_CXX_FLAGS=\"-Wno-stringop-overflow -Wno-maybe-uninitialized\" -DCMAKE_C_FLAGS="" -DCMAKE_EXE_LINKER_FLAGS="" -DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=Release -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DJIT_EXECUTOR_LIB=${WORKDIR}/polyglot-nativeapi-native-library -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk . \n\t DEB_BUILD_HARDENING=1 make -j1 VERBOSE=1:" debian/rules
         sed -i "s/override_dh_auto_clean:/override_dh_auto_clean:\n\noverride_dh_auto_build:\n\tmake -j1/" debian/rules
     else
         sed -i "s:VERBOSE=1:-DBUNDLED_PYTHON_DIR=\"/usr/local/python312\" -DPYTHON_INCLUDE_DIRS=\"/usr/local/python312/include/python3.12\" -DPYTHON_LIBRARIES=\"/usr/local/python312/lib/libpython3.12.so\" -DBUNDLED_ANTLR_DIR=\"/opt/antlr4/usr/local\" -DPACKAGE_YEAR=${CURRENT_YEAR} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DEXTRA_INSTALL=\"\" -DEXTRA_NAME_SUFFIX=\"\" -DWITH_OCI=$WORKDIR/oci_sdk -DMYSQL_SOURCE_DIR=${WORKDIR}/percona-server -DMYSQL_BUILD_DIR=${WORKDIR}/percona-server/bld -DMYSQL_EXTRA_LIBRARIES=\"-lz -ldl -lssl -lcrypto -licui18n -licuuc -licudata \" -DWITH_PROTOBUF=system -DJIT_EXECUTOR_LIB=${WORKDIR}/polyglot-nativeapi-native-library -DHAVE_PYTHON=1 -DWITH_STATIC_LINKING=ON -DZLIB_LIBRARY=${WORKDIR}/percona-server/extra/zlib -DWITH_OCI=$WORKDIR/oci_sdk . \n\t DEB_BUILD_HARDENING=1 make -j8 VERBOSE=1:" debian/rules
