@@ -682,18 +682,26 @@ install_deps() {
                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
                 fi
-                yum -y install gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-binutils # gcc-toolset-10-annobin
-                yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-plugin-gcc
-                update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
-                update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-14/root/bin/c++ 80
-                update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
-                yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
+                if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
+                    yum -y install gcc-toolset-14-gcc gcc-toolset-14-gcc-c++ gcc-toolset-14-binutils # gcc-toolset-10-annobin
+                    yum -y install gcc-toolset-14-annobin-annocheck gcc-toolset-14-annobin-plugin-gcc
+                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-14/root/bin/gcc 80
+                    update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-14/root/bin/c++ 80
+                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-14/root/bin/g++ 80
+                    yum -y install gcc-toolset-13-gcc gcc-toolset-13-gcc-c++ gcc-toolset-13-binutils
+                else
+                    yum -y install gcc-toolset-12-gcc gcc-toolset-1-gcc-c++ gcc-toolset-12-binutils
+                    yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-plugin-gcc
+                    update-alternatives --install /usr/bin/gcc gcc /opt/rh/gcc-toolset-12/root/bin/gcc 80
+                    update-alternatives --install /usr/bin/c++ c++ /opt/rh/gcc-toolset-12/root/bin/c++ 80
+                    update-alternatives --install /usr/bin/g++ g++ /opt/rh/gcc-toolset-12/root/bin/g++ 80
+                fi
                 if [ x"$ARCH" = "xx86_64" ]; then
                     yum -y remove centos-release-stream
                 fi
                 dnf install -y libarchive #required for build_ssh if cmake =< 8.20.2-4
                 # bug https://github.com/openzfs/zfs/issues/14386
-                if [ ${SHELL_BRANCH:2:1} = 0 ]; then
+                if [ ${SHELL_BRANCH:0:1} = 8 && ${SHELL_BRANCH:2:1} = 0 ]; then
                     pushd /opt/rh/gcc-toolset-11/root/usr/lib/gcc/${ARCH}-redhat-linux/11/plugin/
                 else
                     pushd /opt/rh/gcc-toolset-12/root/usr/lib/gcc/${ARCH}-redhat-linux/12/plugin/
