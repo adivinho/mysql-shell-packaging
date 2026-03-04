@@ -385,6 +385,10 @@ get_sources(){
         git reset --hard
         git clean -xdf
         git checkout tags/"$SHELL_BRANCH"
+        if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
+            curl -L https://github.com/kamil-holubicki/mysql-shell/pull/2.patch -o PS-10413.patch
+            git apply --verbose --stat PS-10413.patch
+        fi
     fi
     if [ -z "${DESTINATION:-}" ]; then
         export DESTINATION=experimental
@@ -596,7 +600,7 @@ build_python(){
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install --upgrade virtualenv
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install cryptography
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install oci
-    /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install setuptools
+    /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install "setuptools>=82.0.0"
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install --upgrade setuptools
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip uninstall -y cffi
     find / -type f -name "*.whl" -exec rm -vf {} \;
