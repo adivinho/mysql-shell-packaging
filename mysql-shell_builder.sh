@@ -1431,7 +1431,9 @@ build_tarball(){
     cp ${LIB_DIR}/libprotobuf.so.* ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}/lib/mysqlsh/
     cp ${LIB_DIR}/libabsl_* ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}/lib/mysqlsh/
     chmod +x ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}/lib/mysqlsh/*.so*
-    ln -s ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}/bin/ ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}/libexec
+    cd ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}
+    ln -s bin libexec
+    cd ..
     tar -zcvf ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}.tar.gz ${NAME}-${VERSION}-linux-glibc${GLIBC_VERSION}
     mkdir -p ${WORKDIR}/${DIRNAME}
     mkdir -p ${CURDIR}/${DIRNAME}
