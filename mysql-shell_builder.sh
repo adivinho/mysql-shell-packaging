@@ -388,7 +388,9 @@ get_sources(){
         if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
             #curl -L https://github.com/kamil-holubicki/mysql-shell/pull/2.patch -o PS-10413.patch
             curl -L https://github.com/kamil-holubicki/mysql-shell/compare/9.6...PS-10413_and_PS-10416.patch -o PS-10413.patch
-            git apply --verbose --stat PS-10413.patch
+            #git apply --verbose --stat PS-10413.patch
+            git apply --3way PS-10413.patch
+            git status
         fi
     fi
     if [ -z "${DESTINATION:-}" ]; then
