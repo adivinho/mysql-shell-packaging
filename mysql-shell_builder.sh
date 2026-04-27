@@ -1249,8 +1249,8 @@ build_deb(){
     get_database
     #get_v8
     get_GraalVM
-    build_oci_sdk
-    cd ${WORKDIR}/percona-mysql-shell-${SHELL_BRANCH}-${DEB_RELEASE}
+    ##build_oci_sdk
+    cd ${WORKDIR}/percona-mysql-shell-${SHELL_BRANCH}-1
     sed -i 's:3.8:3.6:' CMakeLists.txt
     sed -i 's/make -j8/make -j8\n\t/' debian/rules
     sed -i '/-DCMAKE/,/j8/d' debian/rules
