@@ -465,13 +465,15 @@ get_sources(){
         git clean -xdf
         git checkout tags/"$SHELL_BRANCH"
         if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
-            #curl -L https://github.com/kamil-holubicki/mysql-shell/pull/2.patch -o PS-10413.patch
-            #curl -L https://github.com/kamil-holubicki/mysql-shell/compare/9.6...PS-10413_and_PS-10416.patch -o PS-10413.patch
-            curl -L https://github.com/mysql/mysql-shell/compare/9.7...kamil-holubicki:mysql-shell:PS-10413_and_PS-10416_9.7.patch -o PS-10413.patch
-            git apply --stat PS-10413.patch
-            patch -p1 -N --fuzz=3 < PS-10413.patch
-            git diff mysqlshdk/libs/storage/backend/object_storage_bucket.cc
+            #curl -L https://github.com/mysql/mysql-shell/compare/9.7...kamil-holubicki:mysql-shell:PS-10413_and_PS-10416_9.7.patch -o PS-10413.patch
+            #git apply --stat PS-10413.patch
+            #patch -p1 -N --fuzz=3 < PS-10413.patch
+            #git diff mysqlshdk/libs/storage/backend/object_storage_bucket.cc
         fi
+    fi
+    if [ -f MYSQL_VERSION ]; then
+        source MYSQL_VERSION
+        SHELL_BRANCH="${MYSQL_VERSION_MAJOR}.${MYSQL_VERSION_MINOR}.${MYSQL_VERSION_PATCH}"
     fi
     if [ -z "${DESTINATION:-}" ]; then
         export DESTINATION=experimental
