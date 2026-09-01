@@ -1094,6 +1094,22 @@ build_srpm(){
         source /opt/rh/rh-python38/enable
     fi
     cd $WORKDIR
+    rm -rf mysql_version_src
+    git clone --depth 1 --filter=blob:none --no-checkout --single-branch --branch "$SHELL_BRANCH" "$SHELL_REPO" mysql_version_src
+    (
+        cd mysql_version_src
+        git sparse-checkout init --cone
+        git sparse-checkout set MYSQL_VERSION
+        git checkout "$SHELL_BRANCH"
+    )
+    if [ -f mysql_version_src/MYSQL_VERSION ]; then
+        cp mysql_version_src/MYSQL_VERSION "$WORKDIR/MYSQL_VERSION"
+    fi
+    rm -rf mysql_version_src
+    if [ -f MYSQL_VERSION ]; then
+        source MYSQL_VERSION
+        SHELL_BRANCH="${MYSQL_VERSION_MAJOR}.${MYSQL_VERSION_MINOR}.${MYSQL_VERSION_PATCH}"
+    fi
     get_tar "source_tarball"
     rm -fr rpmbuild
     ls | grep -v percona-mysql-shell-*.tar.* | grep -v protobuf | xargs rm -rf
