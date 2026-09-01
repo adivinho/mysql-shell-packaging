@@ -463,7 +463,15 @@ get_sources(){
     then
         git reset --hard
         git clean -xdf
-        git checkout tags/"$SHELL_BRANCH"
+        git checkout tags/"$SHELL_BRANCH" 2>/dev/null
+        if [ $? != 0 ]; then
+            echo "Tag $SHELL_BRANCH not found, trying to checkout as a branch"
+            git checkout "$SHELL_BRANCH"
+            if [ $? != 0 ]; then
+                echo "Could not checkout $SHELL_BRANCH as either a tag or a branch"
+                exit 1
+            fi
+        fi
         #if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
         #    curl -L https://github.com/mysql/mysql-shell/compare/9.7...kamil-holubicki:mysql-shell:PS-10413_and_PS-10416_9.7.patch -o PS-10413.patch
         #    git apply --stat PS-10413.patch
