@@ -11,7 +11,7 @@ shell_quote_string() {
 git_clone_with_retry() {
     repo_url="$1"
     dest_dir="$2"
-    max_attempts=5
+    max_attempts=10
     attempt=1
     delay=60
     while [ $attempt -le $max_attempts ]; do
@@ -164,7 +164,7 @@ get_cmake(){
 
 get_antlr4-runtime(){
     cd "${WORKDIR}"
-    git clone https://github.com/antlr/antlr4.git
+    git_clone_with_retry https://github.com/antlr/antlr4.git
     cd antlr4/runtime/Cpp
     git checkout 4.13.2
     mkdir -p build && mkdir -p run && cd build
@@ -574,7 +574,7 @@ get_sources(){
 }
 
 build_oci_sdk(){
-    git clone https://github.com/oracle/oci-python-sdk.git
+    git_clone_with_retry https://github.com/oracle/oci-python-sdk.git
     cd oci-python-sdk/
     git checkout v2.6.2
     if [ "x$OS_NAME" = "buster" ]; then
@@ -1026,7 +1026,7 @@ install_deps() {
     fi
     if [ ! -d /usr/local/percona-subunit2junitxml ]; then
         cd /usr/local
-        git clone https://github.com/percona/percona-subunit2junitxml.git
+        git_clone_with_retry https://github.com/percona/percona-subunit2junitxml.git
         rm -rf /usr/bin/subunit2junitxml
         ln -s /usr/local/percona-subunit2junitxml/subunit2junitxml /usr/bin/subunit2junitxml
         cd ${CURPLACE}
