@@ -472,12 +472,12 @@ get_sources(){
                 exit 1
             fi
         fi
-        #if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
-        #    curl -L https://github.com/mysql/mysql-shell/compare/9.7...kamil-holubicki:mysql-shell:PS-10413_and_PS-10416_9.7.patch -o PS-10413.patch
-        #    git apply --stat PS-10413.patch
-        #    patch -p1 -N --fuzz=3 < PS-10413.patch
-        #    git diff mysqlshdk/libs/storage/backend/object_storage_bucket.cc
-        #fi
+        if [[ ${SHELL_BRANCH:0:1} = 9 ]]; then
+            curl -L https://github.com/mysql/mysql-shell/compare/9.7...kamil-holubicki:mysql-shell:PS-10413_and_PS-10416_9.7.patch -o PS-10413.patch
+            git apply --stat PS-10413.patch
+            patch -p1 -N --fuzz=3 < PS-10413.patch
+            git diff mysqlshdk/libs/storage/backend/object_storage_bucket.cc
+        fi
     fi
     if [ -f MYSQL_VERSION ]; then
         source MYSQL_VERSION
