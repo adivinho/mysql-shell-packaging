@@ -13,7 +13,7 @@ git_clone_with_retry() {
     dest_dir="$2"
     max_attempts=10
     attempt=1
-    delay=60
+    delay=30
     while [ $attempt -le $max_attempts ]; do
         echo "Cloning ${repo_url} (attempt ${attempt}/${max_attempts})..."
         if [ -n "$dest_dir" ]; then
