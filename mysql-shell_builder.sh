@@ -4,6 +4,38 @@ shell_quote_string() {
     echo "$1" | sed -e 's,\([^a-zA-Z0-9/_.=-]\),\\\1,g'
 }
 
+# Clones $1 (optionally into directory $2) retrying with backoff on failure.
+# Transient GitHub auth/rate-limit hiccups (e.g. "could not read Username ...
+# No such device or address" from many parallel unauthenticated clones)
+# should not fail the whole build on the first bad attempt.
+git_clone_with_retry() {
+    repo_url="$1"
+    dest_dir="$2"
+    max_attempts=5
+    attempt=1
+    delay=60
+    while [ $attempt -le $max_attempts ]; do
+        echo "Cloning ${repo_url} (attempt ${attempt}/${max_attempts})..."
+        if [ -n "$dest_dir" ]; then
+            GIT_TERMINAL_PROMPT=0 git clone "$repo_url" "$dest_dir"
+        else
+            GIT_TERMINAL_PROMPT=0 git clone "$repo_url"
+        fi
+        clone_retval=$?
+        if [ $clone_retval = 0 ]; then
+            return 0
+        fi
+        if [ $attempt -lt $max_attempts ]; then
+            echo "Clone attempt ${attempt}/${max_attempts} failed (exit ${clone_retval}). Retrying in ${delay}s..."
+            sleep $delay
+        fi
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+    done
+    echo "Failed to clone ${repo_url} after ${max_attempts} attempts"
+    return $clone_retval
+}
+
 usage () {
     cat <<EOF
 Usage: $0 [OPTIONS]
@@ -201,11 +233,11 @@ get_database(){
     if [ -d percona-server ]; then
         rm -rf percona-server
     fi
-    git clone "${REPO}"
+    git_clone_with_retry "${REPO}"
     retval=$?
     if [ $retval != 0 ]
     then
-        echo "There were some issues during repo cloning from github. Please retry one more time"
+        echo "There were some issues during repo cloning from github, even after retries. Please retry one more time"
         exit 1
     fi
     repo_name=$(echo $REPO | awk -F'/' '{print $NF}' | awk -F'.' '{print $1}')
@@ -450,11 +482,11 @@ get_sources(){
             source /opt/rh/rh-python38/enable
         fi
     fi
-    git clone "$SHELL_REPO"
+    git_clone_with_retry "$SHELL_REPO"
     retval=$?
     if [ $retval != 0 ]
     then
-        echo "There were some issues during repo cloning from github. Please retry one more time"
+        echo "There were some issues during repo cloning from github, even after retries. Please retry one more time"
         exit 1
     fi
     REVISION=$(git rev-parse --short HEAD)
