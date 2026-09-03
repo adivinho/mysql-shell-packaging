@@ -17,6 +17,7 @@ git_clone_with_retry() {
     while [ $attempt -le $max_attempts ]; do
         echo "Cloning ${repo_url} (attempt ${attempt}/${max_attempts})..."
         if [ -n "$dest_dir" ]; then
+            rm -rf "$dest_dir"
             GIT_TERMINAL_PROMPT=0 git clone "$repo_url" "$dest_dir"
         else
             GIT_TERMINAL_PROMPT=0 git clone "$repo_url"
@@ -164,6 +165,7 @@ get_cmake(){
 
 get_antlr4-runtime(){
     cd "${WORKDIR}"
+    rm -rf antlr4
     git_clone_with_retry https://github.com/antlr/antlr4.git
     cd antlr4/runtime/Cpp
     git checkout 4.13.2
@@ -574,6 +576,7 @@ get_sources(){
 }
 
 build_oci_sdk(){
+    rm -rf oci-python-sdk
     git_clone_with_retry https://github.com/oracle/oci-python-sdk.git
     cd oci-python-sdk/
     git checkout v2.6.2
