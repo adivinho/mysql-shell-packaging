@@ -1334,6 +1334,7 @@ build_source_deb(){
     sed -i 's|Source: mysql-shell|Source: percona-mysql-shell|' debian/control
     sed -i 's|Package: mysql-shell|Package: percona-mysql-shell|' debian/control
     sed -i 's|cmake (>= 2.8.5), ||' debian/control
+    sed -i 's|cmake, ||' debian/control
     sed -i 's|mysql-shell|percona-mysql-shell|' debian/changelog
     sed -i 's|${misc:Depends},|${misc:Depends}, python3|' debian/control
     sed -i 's|(>=0.9.2)||' debian/control
