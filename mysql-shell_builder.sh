@@ -1331,6 +1331,7 @@ build_source_deb(){
     mv ${TARFILE} ${NEWTAR}
     tar xzf ${NEWTAR}
     cd mysql-shell-${VERSION}
+    sed -i 's:native:quilt:g' debian/source/format
     sed -i 's|Source: mysql-shell|Source: percona-mysql-shell|' debian/control
     sed -i 's|Package: mysql-shell|Package: percona-mysql-shell|' debian/control
     sed -i 's|cmake (>= 2.8.5), ||' debian/control
