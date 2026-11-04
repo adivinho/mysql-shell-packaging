@@ -608,6 +608,8 @@ build_oci_sdk(){
                 pip3 uninstall -y cffi
         fi
     fi
+    # always ship the latest pip (and its vendored msgpack/urllib3), msgpack and urllib3 in the bundled OCI SDK
+    pip install --upgrade pip msgpack urllib3
     rm -f /oci_sdk/.gitignore
     mv oci_sdk ${WORKDIR}/
     cd ../
@@ -734,8 +736,15 @@ build_python(){
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install oci
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install "setuptools>=82.0.0"
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install --upgrade setuptools
+    /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip install --upgrade msgpack urllib3
     /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip uninstall -y cffi
-    find / -type f -name "*.whl" -exec rm -vf {} \;
+    # remove wheels only from the bundled Python; system wheels (e.g. /usr/share/python3-wheels)
+    # are required by the system virtualenv used in build_oci_sdk
+    find /usr/local/python3${arraypversion[1]} -type f -name "*.whl" -exec rm -vf {} \;
+    # pip is not needed at runtime and carries its own vendored (often outdated) copies of
+    # msgpack, urllib3, setuptools etc. that security scanners flag, so drop it from the bundled Python
+    /usr/local/python3${arraypversion[1]}/bin/python3.${arraypversion[1]} -m pip uninstall -y pip
+    rm -rf /usr/local/python3${arraypversion[1]}/lib/python3.${arraypversion[1]}/site-packages/pip
 }
 
 install_deps() {
@@ -810,6 +819,8 @@ install_deps() {
             yum -y install cmake
             yum -y install libcmocka-devel
             yum -y install libffi-devel
+            # needed to build _bz2, _lzma and _sqlite3 modules of the bundled Python
+            yum -y install bzip2-devel xz-devel sqlite-devel
             yum -y install libuuid-devel pkgconf-pkg-config
             yum -y install patchelf
             yum -y install libudev-devel
@@ -947,6 +958,15 @@ install_deps() {
             g++ --version
         fi
     else #========================================> OS: deb
+        export DIST="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+        if [ "${DIST}" == "bullseye" ]; then
+            sed -i -E '/bullseye(-security|-updates)?[[:space:]]/d' /etc/apt/sources.list
+cat <<'EOF' | tee -a /etc/apt/sources.list
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20260830T000000Z/ bullseye main
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20260830T000000Z/ bullseye-updates main
+deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/20260830T000000Z/ bullseye-security main
+EOF
+        fi
         apt-get update
         sleep 20
         apt-get -y install dirmngr || true
@@ -954,7 +974,6 @@ install_deps() {
         wget --no-check-certificate https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb && dpkg -i percona-release_latest.$(lsb_release -sc)_all.deb
         percona-release enable tools testing
         export DEBIAN_FRONTEND="noninteractive"
-        export DIST="$(lsb_release -sc)"
         until apt-get update; do
             sleep 10
             echo "waiting"
@@ -993,6 +1012,8 @@ install_deps() {
         apt-get -y install python3 python3-pip
         apt-get -y install python3-dev || true
         apt-get -y install libffi-dev || true
+        # needed to build _bz2, _lzma and _sqlite3 modules of the bundled Python
+        apt-get -y install libbz2-dev liblzma-dev libsqlite3-dev || true
         PIP_UTIL="pip3"
         if [ "x${DIST}" = "xnoble" -o "x${DIST}" = "xbookworm" -o "x${DIST}" = "xtrixie" -o "x${DIST}" = "xresolute" ]; then
             apt-get -y install pipx
